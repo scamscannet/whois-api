@@ -8,7 +8,8 @@ from adapters import adapters
 def parse_whois_request_to_model(text: str, whois_server):
     parsed = response_to_json(text)
     if whois_server not in adapters.keys():
-        return {}
-    adapter = adapters[whois_server]()
+        adapter = adapters['RAA2013']()
+    else:
+        adapter = adapters[whois_server]()
     adapter.parse(parsed)
     return adapter

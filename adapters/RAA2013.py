@@ -2,7 +2,6 @@ from models.whois import Whois as Wh
 
 
 class Whois(Wh):
-    print("Hi")
     assoc_whois_server = "whois.cloudflare.com"
     _date_keys = {
         'Updated Date': 'updated_date',

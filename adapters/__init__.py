@@ -1,5 +1,5 @@
-from adapters.cloudflare import Whois as CloudflareWhois
+from adapters.RAA2013 import Whois as RAA2013
 
 adapters = {
-    'whois.cloudflare.com': CloudflareWhois
+    'RAA2013': RAA2013
 }
