@@ -2,31 +2,30 @@ from models.whois import Whois as Wh
 
 
 class Whois(Wh):
-    assoc_whois_server = "whois.cloudflare.com"
     _date_keys = {
-        'Updated Date': 'updated_date',
-        'Creation Date': 'registration_date',
-        'Registrar Registration Expiration Date': 'expiration_date'
+        'updated date': 'updated_date',
+        'creation date': 'registration_date',
+        'registrar registration Expiration Date': 'expiration_date'
     }
 
     _general_keys = {
-        'Domain Name': 'domain',
-        'Registrar WHOIS Server': 'whois',
-        'Name Server': 'name_servers',
+        'domain name': 'domain',
+        'registrar whois server': 'whois',
+        'name server': 'name_servers',
     }
 
     _registrar_keys = {
-        'Registrar': 'name',
-        'Registrar IANA ID': 'iana_id',
-        'Registrar URL': 'url',
-        'Registrar Abuse Contact Email': 'abuse_mail',
-        'Registrar Abuse Contact Phone': 'abuse_phone',
+        'registrar': 'name',
+        'registrar iana id': 'iana_id',
+        'registrar url': 'url',
+        'registrar abuse contact email': 'abuse_mail',
+        'registrar abuse contact phone': 'abuse_phone',
     }
 
     _contact_keys = {
         f"{cloudflare_type} {attribute}": [value, local_type]
-        for attribute, value in [['Name', 'name'], ['Organization', 'organization'], ['Street', 'street'], ['City', 'city'], ['State/Province', 'state'], ['Postal Code', 'postal_code'], ['Country', 'country'], ['Phone', 'phone'], ['Fax', 'fax'], ['Email', 'email']]
-        for cloudflare_type, local_type in [['Registrant', 'registrant'], ['Admin', 'admin'], ['Tech', 'tech'], ['Billing', 'billing']]
+        for attribute, value in [['name', 'name'], ['organization', 'organization'], ['street', 'street'], ['City', 'city'], ['state/province', 'state'], ['postal code', 'postal_code'], ['country', 'country'], ['phone', 'phone'], ['fax', 'fax'], ['email', 'email']]
+        for cloudflare_type, local_type in [['registrant', 'registrant'], ['admin', 'admin'], ['tech', 'tech'], ['billing', 'billing']]
     }
 
 

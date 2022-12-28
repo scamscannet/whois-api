@@ -16,7 +16,6 @@ class Whois(BaseModel):
     contact: list = []
 
     # Adapter params
-    assoc_whois_server = "whois.cloudflare.com"
     _date_keys: dict
     _general_keys: dict
     _contact_keys: dict
@@ -24,29 +23,28 @@ class Whois(BaseModel):
 
     def parse(self, parsed_text):
         self.date = WhoisDate()
-        whois_registrar = WhoisRegistrar()
 
         contact_type = 'registrant'
         for key, data in parsed_text:
             # Parse date
-            if key in self._date_keys:
-                attribute = self._date_keys[key]
+            if key.lower() in self._date_keys:
+                attribute = self._date_keys[key.lower()]
                 try:
                     setattr(self.date, attribute, dateutil.parser.parse(data, fuzzy=True))
                 except Exception:
                     # TODO: Error handling
                     pass
             # Parse general values
-            elif key in self._general_keys:
-                attribute = self._general_keys[key]
+            elif key.lower() in self._general_keys:
+                attribute = self._general_keys[key.lower()]
                 if attribute == 'name_servers':
                     setattr(self, attribute, getattr(self, attribute) + [data])  # Append to list
                 else:
                     setattr(self, attribute, data)
 
             # Parse registrar
-            elif key in self._registrar_keys:
-                attribute = self._registrar_keys[key]
+            elif key.lower() in self._registrar_keys:
+                attribute = self._registrar_keys[key.lower()]
                 try:
                     setattr(self.registrar, attribute, data)
                 except Exception:
@@ -54,9 +52,9 @@ class Whois(BaseModel):
                     pass
 
             # Parse Contact
-            elif key in self._contact_keys:
+            elif key.lower() in self._contact_keys:
                 existing_contacts = {contact.type: contact for contact in self.contact}
-                attribute, raw_local_contact_type = self._contact_keys[key]
+                attribute, raw_local_contact_type = self._contact_keys[key.lower()]
                 local_contact_type = raw_local_contact_type.capitalize()
                 # Cache the current contact type in case the whois record
                 # defines it only once above the according values

@@ -40,3 +40,20 @@ def response_to_json(response: str):
         key = key_raw.strip()
         data = data_raw.strip()
         yield key, data
+
+def response_to_key_value_json(response: str):
+    return_dict = dict()
+    for line in response.split('\n'):
+        if ':' not in line:
+            continue
+        key_raw, data_raw = line.split(':', 1)
+        key = key_raw.strip()
+        data = data_raw.strip()
+        if key not in return_dict.keys():
+            return_dict[key] = data
+        else:
+            if isinstance(return_dict[key], list):
+                return_dict[key].append(data)
+            else:
+                return_dict[key] = [return_dict[key], data]
+    return return_dict
