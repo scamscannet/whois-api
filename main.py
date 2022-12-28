@@ -1,10 +1,8 @@
 from fastapi import FastAPI
 
 from models.api.whois_response import WhoisResponse
-from models.whois import Whois
-from models.whois_date import WhoisDate
 from parser import parse_whois_request_to_model
-from whois import response_to_json, make_whois_request, response_to_key_value_json
+from whois import make_whois_request, response_to_key_value_json
 
 app = FastAPI(
     title="Whois API"

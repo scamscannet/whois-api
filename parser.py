@@ -1,5 +1,3 @@
-from models.whois import Whois
-from models.whois_date import WhoisDate
 from whois import response_to_json
 from adapters import adapters
 
