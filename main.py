@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 from models.whois.whois import Whois
 from models.api.whois_response import WhoisResponse
@@ -8,6 +9,15 @@ from whois.whois import response_to_key_value_json, make_whois_request
 app = FastAPI(
     title="Whois API"
 )
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get("/", include_in_schema=False)
 def redirect_to_docs():
