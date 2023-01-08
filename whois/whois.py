@@ -22,11 +22,13 @@ def make_whois_request(domain: str) -> (str, str):
     whois_server = tld_to_whois.whois_server_for_tld(domain.split('.')[1])
     used_servers = []
     last_used_whois_server = None
+    current_whois_data = None
     while whois_server:
         whois_data = raw_whois_request(whois_server, domain)
         last_used_whois_server = whois_server
         used_servers.append(whois_server)
         if whois_data:
+            current_whois_data = whois_data
             try:
                 new_server = find_parent_whois_server_in_response(whois_data).replace("\r", "")
                 if new_server and whois_server != new_server and not new_server in used_servers:
@@ -35,9 +37,12 @@ def make_whois_request(domain: str) -> (str, str):
                     whois_server = None
             except:
                 whois_server = None
-        else:
-            raise Exception("Error while making whois request")
-    return whois_data, last_used_whois_server
+
+    if current_whois_data:
+        return current_whois_data, last_used_whois_server
+
+    else:
+        raise Exception("Error while making whois request")
 
 
 def response_to_json(response: str):
