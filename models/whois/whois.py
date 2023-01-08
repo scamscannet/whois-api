@@ -21,10 +21,9 @@ class Whois(BaseModel):
     _contact_keys: dict
     _registrar_keys: dict
 
-    def parse(self, parsed_text):
-        self.date = WhoisDate()
-
-        contact_type = 'registrant'
+    def parse(self, parsed_text, whois_server):
+        self.whois = whois_server
+        contact_type = 'registrant' # Placeholder as Registrant is ususally the first used contact type
         for key, data in parsed_text:
             # Parse date
             if key.lower() in self._date_keys:

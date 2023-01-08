@@ -1,14 +1,19 @@
-from whois_request import raw_whois_request
-from tld_whois_server import TldToWhoisServer
+from whois.whois_request import raw_whois_request
+from models.tld_whois_server import TldToWhoisServer
 
 
 def find_parent_whois_server_in_response(response: str):
     splitted_response = response.lower().split('\n')
     for line in splitted_response:
-        if 'whois' in line and not line.startswith('%'):
-            key, data = line.replace('http://', '').replace('https://', '').replace(' ', '').split(':')
-            return data
-    return None
+
+        if 'whois' in line and not (line.startswith('%') or line.startswith(">>>")):
+            try:
+                print(line)
+                key, data = line.replace('http://', '').replace('https://', '').replace(' ', '').split(':')
+                return data
+            except:
+                continue
+    return ""
 
 
 def make_whois_request(domain: str) -> (str, str):
@@ -22,10 +27,13 @@ def make_whois_request(domain: str) -> (str, str):
         last_used_whois_server = whois_server
         used_servers.append(whois_server)
         if whois_data:
-            new_server = find_parent_whois_server_in_response(whois_data).replace("\r", "")
-            if whois_server != new_server and not new_server in used_servers:
-                whois_server = new_server
-            else:
+            try:
+                new_server = find_parent_whois_server_in_response(whois_data).replace("\r", "")
+                if new_server and whois_server != new_server and not new_server in used_servers:
+                    whois_server = new_server
+                else:
+                    whois_server = None
+            except:
                 whois_server = None
         else:
             raise Exception("Error while making whois request")

@@ -1,6 +1,6 @@
 from models.whois.whois import Whois as Wh
 
-
+server = "RAA2013"
 class Whois(Wh):
     _date_keys = {
         'updated date': 'updated_date',

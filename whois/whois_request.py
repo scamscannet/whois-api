@@ -4,6 +4,7 @@ Program to fetch whois information of a domain name
 import socket, sys
 import whois
 
+
 # Perform a generic whois query to a server and get the reply
 def raw_whois_request(server, domain):
     # socket connection

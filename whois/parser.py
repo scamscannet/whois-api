@@ -1,4 +1,4 @@
-from whois import response_to_json
+from whois.whois import response_to_json
 from adapters import adapters
 
 
@@ -9,5 +9,5 @@ def parse_whois_request_to_model(text: str, whois_server):
         adapter = adapters['RAA2013']()
     else:
         adapter = adapters[whois_server]()
-    adapter.parse(parsed)
+    adapter.parse(parsed, whois_server)
     return adapter

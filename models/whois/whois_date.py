@@ -11,4 +11,3 @@ class WhoisDate(BaseModel):
     def process_param(self, key: str, data: str):
         if key.lower() in ['expired', 'expiration', 'expiry', 'expire']:
             self.expiration_date = parser.parse(data, fuzzy=True)
-            print(self.expiration_date)
