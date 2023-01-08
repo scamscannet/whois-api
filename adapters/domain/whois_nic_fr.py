@@ -1,4 +1,4 @@
-from models.whois.whois import Whois as Wh
+from models.whois.domain.whois import Whois as Wh
 
 server = 'whois.nic.fr'
 

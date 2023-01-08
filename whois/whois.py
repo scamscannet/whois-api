@@ -8,7 +8,6 @@ def find_parent_whois_server_in_response(response: str):
 
         if 'whois' in line and not (line.startswith('%') or line.startswith(">>>")):
             try:
-                print(line)
                 key, data = line.replace('http://', '').replace('https://', '').replace(' ', '').split(':')
                 return data
             except:

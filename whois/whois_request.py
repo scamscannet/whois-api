@@ -22,8 +22,8 @@ def raw_whois_request(server, domain):
     msg = ''
     while len(msg) < 10000:
         chunk = s.recv(100)
-        if (chunk.decode() == ''):
+        if chunk.decode('latin-1') == '':
             break
-        msg = msg + chunk.decode()
+        msg = msg + chunk.decode('latin-1')
 
     return msg

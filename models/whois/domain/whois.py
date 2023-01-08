@@ -1,9 +1,9 @@
 import dateutil.parser
 from pydantic import BaseModel
 
-from models.whois.whois_contact import WhoisContact
-from models.whois.whois_date import WhoisDate
-from models.whois.whois_registrar import WhoisRegistrar
+from models.whois.domain.whois_contact import WhoisContact
+from models.whois.domain.whois_date import WhoisDate
+from models.whois.domain.whois_registrar import WhoisRegistrar
 
 
 class Whois(BaseModel):
