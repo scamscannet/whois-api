@@ -1,3 +1,4 @@
+from diskcache import Cache
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
@@ -20,6 +21,27 @@ app.add_middleware(
 )
 
 
+def add_to_cache(domain: str):
+    with Cache('cache') as cache:
+        cached_domains = cache.get("domain_whois")
+        if cached_domains:
+            new_domains = cached_domains.split(",")[-9:]
+            new_domains.append(domain)
+        else:
+            new_domains = [domain]
+        cache.set("domain_whois", ','.join(new_domains))
+
+def add_ip_to_cache(ip: str):
+    with Cache('cache') as cache:
+        cached_domains = cache.get("ip_whois")
+        if cached_domains:
+            new_domains = cached_domains.split(",")[-9:]
+            new_domains.append(ip)
+        else:
+            new_domains = [ip]
+        cache.set("ip_whois", ','.join(new_domains))
+
+
 @app.get("/", include_in_schema=False)
 def redirect_to_docs():
     RedirectResponse("/docs")
@@ -31,6 +53,7 @@ def request_whois_data_for_domain(domain: str):
     unformatted_dict = response_to_key_value_json(text)
     try:
         parsed = parse_whois_request_to_model(text, whois_server)
+        add_to_cache(domain)
     except Exception as e:
         print(e)
         parsed = Whois()
@@ -47,6 +70,7 @@ def request_whois_data_for_domain(ip: str):
     unformatted_dict = response_to_key_value_json(text)
     try:
         parsed = parse_ip_whois_request_to_model(text, whois_server)
+        add_ip_to_cache(ip)
     except Exception as e:
         parsed = IpWhois()
     parsed.ip = ip
@@ -55,3 +79,23 @@ def request_whois_data_for_domain(ip: str):
         json_format=unformatted_dict,
         raw=text
     )
+
+@app.get("/history")
+def get_last_10_whois_requests():
+    with Cache('cache') as cache:
+        cached_domains = cache.get("domain_whois")
+        if cached_domains:
+            domains = cached_domains.split(',')
+        else:
+            domains = []
+
+        cached_ips = cache.get("ip_whois")
+        if cached_ips:
+            ips = cached_ips.split(',')
+        else:
+            ips = []
+
+    return {
+        'domain': domains,
+        'ip': ips
+    }

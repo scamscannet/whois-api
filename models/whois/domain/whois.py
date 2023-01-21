@@ -54,7 +54,7 @@ class Whois(BaseModel):
             elif key.lower() in self._contact_keys:
                 existing_contacts = {contact.type: contact for contact in self.contact}
                 attribute, raw_local_contact_type = self._contact_keys[key.lower()]
-                local_contact_type = raw_local_contact_type.capitalize()
+                local_contact_type = raw_local_contact_type.capitalize() if raw_local_contact_type else raw_local_contact_type
                 # Cache the current contact type in case the whois record
                 # defines it only once above the according values
                 if not local_contact_type:
