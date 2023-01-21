@@ -5,7 +5,7 @@ class Whois(Wh):
     _date_keys = {
         'updated date': 'updated_date',
         'creation date': 'registration_date',
-        'registrar registration Expiration Date': 'expiration_date'
+        'registrar registration expiration date': 'expiration_date'
     }
 
     _general_keys = {
