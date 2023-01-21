@@ -1,5 +1,5 @@
 from diskcache import Cache
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 from models.whois.domain.whois import Whois
@@ -99,3 +99,8 @@ def get_last_10_whois_requests():
         'domain': domains,
         'ip': ips
     }
+
+@app.get('/current-ip')
+def get_current_ip(request: Request):
+    client_host = request.client.host
+    return {"ip": client_host}
