@@ -64,7 +64,7 @@ def request_whois_data_for_domain(domain: str):
     )
 
 
-@app.get("/ip-whois/{ip}", response_model=IpWhoisResponse)
+@app.get("/ip-whois/{ip}")
 def request_whois_data_for_domain(ip: str):
     text, whois_server = make_whois_request(ip)
     unformatted_dict = response_to_key_value_json(text)

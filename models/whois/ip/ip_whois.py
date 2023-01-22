@@ -2,9 +2,7 @@ import dateutil.parser
 from pydantic import BaseModel
 
 from geolocation import get_location
-from models.whois.ip.ip_whois_contact import IpWhoisContact
-from models.whois.ip.ip_whois_date import IpWhoisDate
-from models.whois.ip.ip_whois_organisation import IpWhoisOrganisation
+from models.whois.ip.ip_whois_inet import IpNet
 
 
 class IpWhois(BaseModel):
@@ -12,6 +10,8 @@ class IpWhois(BaseModel):
     ip: str = None
     addresses = []
     whois: str = None
+    ipnet: IpNet = None
+    as_id: int = None
 
     def parse(self, text, whois_server):
         self.whois = whois_server
@@ -24,9 +24,19 @@ class IpWhois(BaseModel):
                         address += part_address
                     except:
                         pass
+
+                if "inetnum" in line:
+                    key, inet = line.split(":")
+                    self.ipnet = IpNet(inet.strip())
+
+                if "origin: " in line:
+                    print(line)
+                    key, asn = line.split(":")
+                    self.as_id = int(asn.strip().replace("AS", ""))
+
+
+
             if address:
                 loc_obj = get_location(" ".join(address.split()))
-                print(loc_obj)
                 self.addresses.append(loc_obj)
-                print(self.addresses)
 
