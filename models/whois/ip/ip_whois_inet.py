@@ -24,7 +24,7 @@ class IpNet(BaseModel):
             end_ip_diff = end_ip_list[x]
             start_ip_diff = start_ip_list[x]
             base_ip = ".".join(start.split(".")[:x])
-            for v in range(int(start_ip_diff), int(end_ip_diff)):
+            for v in range(int(start_ip_diff), int(end_ip_diff) + 1):
                 all_ips.append(f"{base_ip}.{v}")
 
             ips_in_subnet_count = len(base_ip)
