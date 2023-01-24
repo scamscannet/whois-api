@@ -17,7 +17,7 @@ class IpNet(BaseModel):
         end_ip_as_list = end.split('.')
 
         all_ips = get_all_ips_in_subnet(start_ip_as_list, end_ip_as_list)
-        all_ips = all_ips[100:]
+        all_ips = all_ips[:100]
         all_ips.sort(key=sortfunc)
         data = {
             'first_ip': start,
