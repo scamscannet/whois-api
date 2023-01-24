@@ -45,7 +45,14 @@ class Whois(BaseModel):
             elif key.lower() in self._registrar_keys:
                 attribute = self._registrar_keys[key.lower()]
                 try:
-                    setattr(self.registrar, attribute, data)
+                    if attribute == "iana_id":
+                        try:
+                            setattr(self.registrar, attribute, int(data))
+                        except:
+                            pass
+                    else:
+                        setattr(self.registrar, attribute, data)
+
                 except Exception:
                     # TODO: Error handling
                     pass
