@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 
+from geolocation import Location
+
 
 class WhoisContact(BaseModel):
     type: str = None
@@ -13,4 +15,5 @@ class WhoisContact(BaseModel):
     postal_code: int = None
     country: str = None
     fax: str = None
+    location: Location = {}
 

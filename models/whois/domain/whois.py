@@ -1,6 +1,7 @@
 import dateutil.parser
 from pydantic import BaseModel
 
+from geolocation import get_location
 from models.whois.domain.whois_contact import WhoisContact
 from models.whois.domain.whois_date import WhoisDate
 from models.whois.domain.whois_registrar import WhoisRegistrar
@@ -78,3 +79,11 @@ class Whois(BaseModel):
                     contact_obj.type = local_contact_type
                     setattr(contact_obj, attribute, data)
                     self.contact.append(contact_obj)
+
+        for contact in self.contact:
+            try:
+                loc = get_location(f"{contact.organization} {contact.street}, {contact.postal_code} {contact.city}, { contact.country }")
+                if loc:
+                    contact.location = loc
+            except:
+                pass
