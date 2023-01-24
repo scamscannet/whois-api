@@ -67,11 +67,11 @@ def request_whois_data_for_domain(domain: str):
 
 
 @app.get("/ip-whois/{ip}")
-def request_whois_data_for_domain(ip: str):
+def request_whois_data_for_domain(ip: str, max_ipnet_size: int = 500):
     text, whois_server = make_whois_request(ip)
     unformatted_dict = response_to_key_value_json(text)
     try:
-        parsed = parse_ip_whois_request_to_model(text, whois_server)
+        parsed = parse_ip_whois_request_to_model(text, whois_server, max_ipnet_size)
         add_ip_to_cache(ip)
     except Exception as e:
         print(e)

@@ -12,7 +12,7 @@ class IpWhois(BaseModel):
     ipnet: IpNet = None
     as_id: int = None
 
-    def parse(self, text, whois_server):
+    def parse(self, text, whois_server, max_ipnet_size: int = 500):
         self.whois = whois_server
         for part in text.split("\n\n"):
             address = ""
@@ -26,7 +26,7 @@ class IpWhois(BaseModel):
 
                 if "inetnum" in line:
                     key, inet = line.split(":")
-                    self.ipnet = IpNet(inet.strip())
+                    self.ipnet = IpNet(inet.strip(), max_ipnet_size=max_ipnet_size)
 
                 if "origin: " in line:
                     key, asn = line.split(":")

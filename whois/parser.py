@@ -13,10 +13,10 @@ def parse_whois_request_to_model(text: str, whois_server):
     adapter.parse(parsed, whois_server)
     return adapter
 
-def parse_ip_whois_request_to_model(text: str, whois_server):
+def parse_ip_whois_request_to_model(text: str, whois_server, max_ipnet_size: int = 500):
     if whois_server not in ip_adapters.keys():
         adapter = ip_adapters['whois.ripe.net']()
     else:
         adapter = ip_adapters[whois_server]()
-    adapter.parse(text, whois_server)
+    adapter.parse(text, whois_server, max_ipnet_size)
     return adapter
