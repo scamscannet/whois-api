@@ -1,7 +1,7 @@
 import dateutil.parser
 from pydantic import BaseModel
 
-from geolocation import get_location
+from utils.geolocation import get_location
 from models.whois.domain.whois_contact import WhoisContact
 from models.whois.domain.whois_date import WhoisDate
 from models.whois.domain.whois_registrar import WhoisRegistrar

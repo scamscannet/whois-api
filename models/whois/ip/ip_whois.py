@@ -1,7 +1,6 @@
-import dateutil.parser
 from pydantic import BaseModel
 
-from geolocation import get_location
+from utils.geolocation import get_location
 from models.whois.ip.ip_whois_inet import IpNet
 
 
@@ -30,7 +29,6 @@ class IpWhois(BaseModel):
                     self.ipnet = IpNet(inet.strip())
 
                 if "origin: " in line:
-                    print(line)
                     key, asn = line.split(":")
                     self.as_id = int(asn.strip().replace("AS", ""))
 

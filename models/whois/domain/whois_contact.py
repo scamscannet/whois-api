@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from geolocation import Location
+from utils.geolocation import Location
 
 
 class WhoisContact(BaseModel):
