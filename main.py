@@ -50,7 +50,7 @@ def redirect_to_docs():
     RedirectResponse("/docs")
 
 
-@app.get("/whois/{domain}", response_model=WhoisResponse)
+@app.get("/whois/{domain}")
 def request_whois_data_for_domain(domain: str):
 
     with Cache('cache') as cache:
