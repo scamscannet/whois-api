@@ -50,16 +50,18 @@ def redirect_to_docs():
     RedirectResponse("/docs")
 
 
-@app.get("/whois/{domain}")
+@app.get("/whois/{domain}", response_model=WhoisResponse)
 def request_whois_data_for_domain(domain: str):
+
 
     with Cache('cache') as cache:
         cached_response = cache.get(domain)
         if cached_response:
-            return json.loads(cached_response)
+            text, whois_server = cached_response.split("SPLITCACHEHERE")
+        else:
+            text, whois_server = make_whois_request(domain)
+            cache.set(domain, "SPLITCACHEHERE".join([text, whois_server]), expire=3600 * 12)
 
-
-    text, whois_server = make_whois_request(domain)
     unformatted_dict = response_to_key_value_json(text)
     try:
         parsed = parse_whois_request_to_model(text, whois_server)
@@ -72,10 +74,6 @@ def request_whois_data_for_domain(domain: str):
         json_format=unformatted_dict,
         raw=text
     )
-
-    with Cache('cache') as cache:
-        cache.set(domain, response.json(), expire=3600*12)
-
     return response
 
 
@@ -84,9 +82,11 @@ def request_whois_data_for_domain(ip: str, max_ipnet_size: int = 64):
     with Cache('cache') as cache:
         cached_response = cache.get(ip)
         if cached_response:
-            return json.loads(cached_response)
+            text, whois_server = cached_response.split("SPLITCACHEHERE")
+        else:
+            text, whois_server = make_whois_request(ip)
+            cache.set(ip, "SPLITCACHEHERE".join([text, whois_server]), expire=3600 * 12)
 
-    text, whois_server = make_ip_whois_request(ip)
     unformatted_dict = response_to_key_value_json(text)
     try:
         parsed = parse_ip_whois_request_to_model(text, whois_server, max_ipnet_size)
@@ -101,8 +101,6 @@ def request_whois_data_for_domain(ip: str, max_ipnet_size: int = 64):
         raw=text
     )
 
-    with Cache('cache') as cache:
-        cache.set(ip, response.json(), expire=3600*12)
     return response
 
 @app.get("/history")
