@@ -13,5 +13,5 @@ def __list_all_modules():
 
 
 adapters = {
-    module.server: module.IpWhois for module in __list_all_modules()
+    module.server: module.IpWhois for module in __list_all_modules() if module.server
 }

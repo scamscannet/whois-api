@@ -23,7 +23,44 @@ def make_whois_request(domain: str) -> (str, str):
     last_used_whois_server = None
     current_whois_data = None
     while whois_server:
-        whois_data = raw_whois_request(whois_server, domain)
+        try:
+            whois_data = raw_whois_request(whois_server, domain)
+        except:
+            break
+        last_used_whois_server = whois_server
+        used_servers.append(whois_server)
+        if whois_data:
+            current_whois_data = whois_data
+            try:
+                new_server = find_parent_whois_server_in_response(whois_data).replace("\r", "")
+                if new_server and whois_server != new_server and not new_server in used_servers:
+                    whois_server = new_server
+                else:
+                    whois_server = None
+            except:
+                whois_server = None
+
+    if current_whois_data:
+        return current_whois_data, last_used_whois_server
+
+    else:
+        raise Exception("Error while making whois request")
+
+def make_ip_whois_request(ip: str) -> (str, str):
+    tld_to_whois = TldToWhoisServer()
+    tld_to_whois.load()
+    whois_server = tld_to_whois.whois_server_for_tld(ip.split('.')[1])
+    used_servers = []
+    last_used_whois_server = None
+    current_whois_data = None
+    while whois_server:
+        try:
+            fip = ip
+            if whois_server == "whois.arin.net":
+                fip = "n + " + fip
+            whois_data = raw_whois_request(whois_server, fip)
+        except:
+            break
         last_used_whois_server = whois_server
         used_servers.append(whois_server)
         if whois_data:

@@ -8,7 +8,7 @@ from models.whois.domain.whois import Whois
 from models.api.whois_response import WhoisResponse, IpWhoisResponse
 from models.whois.ip.ip_whois import IpWhois
 from whois.parser import parse_whois_request_to_model, parse_ip_whois_request_to_model
-from whois.whois import response_to_key_value_json, make_whois_request
+from whois.whois import response_to_key_value_json, make_whois_request, make_ip_whois_request
 
 app = FastAPI(
     title="Whois API"
@@ -67,8 +67,8 @@ def request_whois_data_for_domain(domain: str):
 
 
 @app.get("/ip-whois/{ip}")
-def request_whois_data_for_domain(ip: str, max_ipnet_size: int = 500):
-    text, whois_server = make_whois_request(ip)
+def request_whois_data_for_domain(ip: str, max_ipnet_size: int = 64):
+    text, whois_server = make_ip_whois_request(ip)
     unformatted_dict = response_to_key_value_json(text)
     try:
         parsed = parse_ip_whois_request_to_model(text, whois_server, max_ipnet_size)

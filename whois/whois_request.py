@@ -12,8 +12,7 @@ def raw_whois_request(server, domain):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((server, 43))
     except Exception as e:
-        print(f"Error while connecting to {server}")
-        return
+        raise Exception()
     # send data
 
     s.send(f"{domain}\r\n".encode())
