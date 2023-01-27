@@ -60,9 +60,7 @@ def make_ip_whois_request(ip: str) -> (str, str):
             fip = ip
             if whois_server == "whois.arin.net":
                 fip = "n + " + fip
-            print(whois_server)
             whois_data = raw_whois_request(whois_server, fip)
-            print(whois_data)
         except:
             break
         last_used_whois_server = whois_server
