@@ -74,7 +74,6 @@ def request_whois_data_for_domain(ip: str, max_ipnet_size: int = 64):
         parsed = parse_ip_whois_request_to_model(text, whois_server, max_ipnet_size)
         add_ip_to_cache(ip)
     except Exception as e:
-        print(e)
         parsed = IpWhois()
     parsed.ip = ip
     return IpWhoisResponse(
