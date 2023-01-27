@@ -1,3 +1,4 @@
+import json
 import traceback
 
 from diskcache import Cache
@@ -51,6 +52,13 @@ def redirect_to_docs():
 
 @app.get("/whois/{domain}", response_model=WhoisResponse)
 def request_whois_data_for_domain(domain: str):
+
+    with Cache('cache') as cache:
+        cached_response = cache.get(domain)
+        if cached_response:
+            return json.loads(cached_response)
+
+
     text, whois_server = make_whois_request(domain)
     unformatted_dict = response_to_key_value_json(text)
     try:
@@ -59,15 +67,25 @@ def request_whois_data_for_domain(domain: str):
     except Exception as e:
         print(e)
         parsed = Whois()
-    return WhoisResponse(
+    response = WhoisResponse(
         parsed=parsed,
         json_format=unformatted_dict,
         raw=text
     )
 
+    with Cache('cache') as cache:
+        cache.set(domain, response.json(), expire=3600*12)
+
+    return response
+
 
 @app.get("/ip-whois/{ip}")
 def request_whois_data_for_domain(ip: str, max_ipnet_size: int = 64):
+    with Cache('cache') as cache:
+        cached_response = cache.get(ip)
+        if cached_response:
+            return json.loads(cached_response)
+
     text, whois_server = make_ip_whois_request(ip)
     unformatted_dict = response_to_key_value_json(text)
     try:
@@ -76,11 +94,16 @@ def request_whois_data_for_domain(ip: str, max_ipnet_size: int = 64):
     except Exception as e:
         parsed = IpWhois()
     parsed.ip = ip
-    return IpWhoisResponse(
+
+    response = IpWhoisResponse(
         parsed=parsed,
         json_format=unformatted_dict,
         raw=text
     )
+
+    with Cache('cache') as cache:
+        cache.set(ip, response.json(), expire=3600*12)
+    return response
 
 @app.get("/history")
 def get_last_10_whois_requests():
