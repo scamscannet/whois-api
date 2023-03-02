@@ -46,6 +46,7 @@ def make_whois_request(domain: str) -> (str, str):
     else:
         raise Exception("Error while making whois request")
 
+
 def make_ip_whois_request(ip: str) -> (str, str):
     tld_to_whois = TldToWhoisServer()
     tld_to_whois.load()
@@ -91,6 +92,7 @@ def response_to_json(response: str):
         key = key_raw.strip()
         data = data_raw.strip()
         yield key, data
+
 
 def response_to_key_value_json(response: str):
     return_dict = dict()

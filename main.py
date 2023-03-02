@@ -10,6 +10,7 @@ from models.api.whois_response import WhoisResponse, IpWhoisResponse
 from models.whois.ip.ip_whois import IpWhois
 from whois.parser import parse_whois_request_to_model, parse_ip_whois_request_to_model
 from whois.whois import response_to_key_value_json, make_whois_request, make_ip_whois_request
+from tldextract import extract
 
 app = FastAPI(
     title="Whois API"
@@ -34,6 +35,7 @@ def add_to_cache(domain: str):
             new_domains = [domain]
         cache.set("domain_whois", ','.join(new_domains))
 
+
 def add_ip_to_cache(ip: str):
     with Cache('cache') as cache:
         cached_domains = cache.get("ip_whois")
@@ -45,6 +47,17 @@ def add_ip_to_cache(ip: str):
         cache.set("ip_whois", ','.join(new_domains))
 
 
+def caching_whois_request(item: str):
+    with Cache('cache') as cache:
+        cached_response = cache.get(item)
+        if cached_response:
+            text, whois_server = cached_response.split("SPLITCACHEHERE")
+        else:
+            text, whois_server = make_whois_request(item)
+            cache.set(item, "SPLITCACHEHERE".join([text, whois_server]), expire=3600 * 12)
+        return text, whois_server
+
+
 @app.get("/", include_in_schema=False)
 def redirect_to_docs():
     RedirectResponse("/docs")
@@ -52,20 +65,15 @@ def redirect_to_docs():
 
 @app.get("/whois/{domain}", response_model=WhoisResponse)
 def request_whois_data_for_domain(domain: str):
+    extracted_domain = extract(domain)
+    parsed_domain = extracted_domain.domain + "." + extracted_domain.suffix
 
-
-    with Cache('cache') as cache:
-        cached_response = cache.get(domain)
-        if cached_response:
-            text, whois_server = cached_response.split("SPLITCACHEHERE")
-        else:
-            text, whois_server = make_whois_request(domain)
-            cache.set(domain, "SPLITCACHEHERE".join([text, whois_server]), expire=3600 * 12)
+    text, whois_server = caching_whois_request(parsed_domain)
 
     unformatted_dict = response_to_key_value_json(text)
     try:
         parsed = parse_whois_request_to_model(text, whois_server)
-        add_to_cache(domain)
+        add_to_cache(parsed_domain)
     except Exception as e:
         print(e)
         parsed = Whois()
@@ -79,14 +87,7 @@ def request_whois_data_for_domain(domain: str):
 
 @app.get("/ip-whois/{ip}")
 def request_whois_data_for_domain(ip: str, max_ipnet_size: int = 64):
-    with Cache('cache') as cache:
-        cached_response = cache.get(ip)
-        if cached_response:
-            text, whois_server = cached_response.split("SPLITCACHEHERE")
-        else:
-            text, whois_server = make_whois_request(ip)
-            cache.set(ip, "SPLITCACHEHERE".join([text, whois_server]), expire=3600 * 12)
-
+    text, whois_server = caching_whois_request(ip)
     unformatted_dict = response_to_key_value_json(text)
     try:
         parsed = parse_ip_whois_request_to_model(text, whois_server, max_ipnet_size)
@@ -102,6 +103,7 @@ def request_whois_data_for_domain(ip: str, max_ipnet_size: int = 64):
     )
 
     return response
+
 
 @app.get("/history")
 def get_last_10_whois_requests():
@@ -122,6 +124,7 @@ def get_last_10_whois_requests():
         'domain': domains,
         'ip': ips
     }
+
 
 @app.get('/current-ip')
 def get_current_ip(request: Request):
