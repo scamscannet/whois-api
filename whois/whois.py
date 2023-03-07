@@ -33,7 +33,7 @@ def make_whois_request(domain: str) -> (str, str):
             current_whois_data = whois_data
             try:
                 new_server = find_parent_whois_server_in_response(whois_data).replace("\r", "")
-                if new_server and whois_server != new_server and not new_server in used_servers:
+                if new_server and whois_server != new_server and not new_server in used_servers and "whois" in new_server:
                     whois_server = new_server
                 else:
                     whois_server = None
