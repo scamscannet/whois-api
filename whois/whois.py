@@ -1,6 +1,8 @@
 from whois.whois_request import raw_whois_request
 from models.tld_whois_server import TldToWhoisServer
 
+tld_to_whois = TldToWhoisServer()
+
 
 def find_parent_whois_server_in_response(response: str):
     splitted_response = response.lower().split('\n')
@@ -16,8 +18,6 @@ def find_parent_whois_server_in_response(response: str):
 
 
 def make_whois_request(domain: str) -> (str, str):
-    tld_to_whois = TldToWhoisServer()
-    tld_to_whois.load()
     whois_server = tld_to_whois.whois_server_for_tld(domain.split('.')[1])
     used_servers = []
     last_used_whois_server = None
