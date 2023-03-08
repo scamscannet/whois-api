@@ -8,10 +8,10 @@ def find_parent_whois_server_in_response(response: str):
     splitted_response = response.lower().split('\n')
     for line in splitted_response:
 
-        if 'whois server' in line.lower() and not (line.startswith('%') or line.startswith(">>>")):
+        if 'whois' in line.lower() and not (line.startswith('%') or line.startswith(">>>")):
             try:
                 key, data = line.replace('http://', '').replace('https://', '').replace(' ', '').split(':')
-                return data
+                return data if not data.startswith("www") else ""
             except:
                 continue
     return ""
