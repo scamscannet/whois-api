@@ -1,7 +1,6 @@
 import json
 import traceback
 
-from diskcache import Cache
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
@@ -9,8 +8,10 @@ from models.whois.domain.whois import Whois
 from models.api.whois_response import WhoisResponse, IpWhoisResponse
 from models.whois.ip.ip_whois import IpWhois
 from whois.parser import parse_whois_request_to_model, parse_ip_whois_request_to_model
-from whois.whois import response_to_key_value_json, make_whois_request, make_ip_whois_request
+from whois.whois import response_to_key_value_json, make_whois_request, make_ip_whois_request, \
+    make_recursive_whois_request
 from tldextract import extract
+from diskcache import Cache
 
 app = FastAPI(
     title="Whois API"
@@ -53,7 +54,7 @@ def caching_whois_request(item: str):
         if cached_response:
             text, whois_server = cached_response.split("SPLITCACHEHERE")
         else:
-            text, whois_server = make_whois_request(item)
+            text, whois_server = make_recursive_whois_request(item)
             cache.set(item, "SPLITCACHEHERE".join([text, whois_server]), expire=3600 * 12)
         return text, whois_server
 
