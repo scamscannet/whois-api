@@ -4,6 +4,8 @@ import traceback
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
+
+from database.registry.WhoisRecordRegistry import get_record_for_domain_if_existing, store_new_record
 from models.whois.domain.whois import Whois
 from models.api.whois_response import WhoisResponse, IpWhoisResponse
 from models.whois.ip.ip_whois import IpWhois
@@ -48,15 +50,16 @@ def add_ip_to_cache(ip: str):
         cache.set("ip_whois", ','.join(new_domains))
 
 
-def caching_whois_request(item: str):
-    with Cache('cache') as cache:
-        cached_response = cache.get(item)
-        if cached_response:
-            text, whois_server = cached_response.split("SPLITCACHEHERE")
-        else:
-            text, whois_server = make_recursive_whois_request(item)
-            cache.set(item, "SPLITCACHEHERE".join([text, whois_server]), expire=3600 * 12)
-        return text, whois_server
+def caching_whois_request(domain: str, renew: bool = False):
+    if not renew:
+        try:
+            text, whois_server = get_record_for_domain_if_existing(domain)
+            return text, whois_server
+        except Exception:
+            pass
+    text, whois_server = make_recursive_whois_request(domain)
+    store_new_record(domain=domain, whois_server=whois_server, response=text)
+    return text, whois_server
 
 
 @app.get("/", include_in_schema=False)
@@ -65,11 +68,11 @@ def redirect_to_docs():
 
 
 @app.get("/whois/{domain}", response_model=WhoisResponse)
-def request_whois_data_for_domain(domain: str):
+def request_whois_data_for_domain(domain: str, live: bool = False):
     extracted_domain = extract(domain)
     parsed_domain = extracted_domain.domain + "." + extracted_domain.suffix
 
-    text, whois_server = caching_whois_request(parsed_domain)
+    text, whois_server = caching_whois_request(parsed_domain, renew=live)
 
     unformatted_dict = response_to_key_value_json(text)
     try:
