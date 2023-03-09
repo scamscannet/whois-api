@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import BaseModel
 
 from models.whois.ip.ip_whois import IpWhois
@@ -8,6 +10,7 @@ class WhoisResponse(BaseModel):
     parsed: Whois
     json_format: dict
     raw: str
+    timestamp: datetime.datetime
 
 class IpWhoisResponse(BaseModel):
     parsed: IpWhois

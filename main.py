@@ -1,3 +1,4 @@
+import datetime
 import json
 import traceback
 
@@ -51,15 +52,16 @@ def add_ip_to_cache(ip: str):
 
 
 def caching_whois_request(domain: str, renew: bool = False):
+    timestamp = datetime.datetime.now()
     if not renew:
         try:
-            text, whois_server = get_record_for_domain_if_existing(domain)
-            return text, whois_server
+            text, whois_server, timestamp = get_record_for_domain_if_existing(domain)
+            return text, whois_server, timestamp
         except Exception:
             pass
     text, whois_server = make_recursive_whois_request(domain)
     store_new_record(domain=domain, whois_server=whois_server, response=text)
-    return text, whois_server
+    return text, whois_server, timestamp
 
 
 @app.get("/", include_in_schema=False)
@@ -72,7 +74,7 @@ def request_whois_data_for_domain(domain: str, live: bool = False):
     extracted_domain = extract(domain)
     parsed_domain = extracted_domain.domain + "." + extracted_domain.suffix
 
-    text, whois_server = caching_whois_request(parsed_domain, renew=live)
+    text, whois_server, timestamp = caching_whois_request(parsed_domain, renew=live)
 
     unformatted_dict = response_to_key_value_json(text)
     try:
@@ -84,7 +86,8 @@ def request_whois_data_for_domain(domain: str, live: bool = False):
     response = WhoisResponse(
         parsed=parsed,
         json_format=unformatted_dict,
-        raw=text
+        raw=text,
+        timestamp=timestamp
     )
     return response
 

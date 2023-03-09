@@ -1,3 +1,5 @@
+import datetime
+
 from database.models.WhoisRecord import WhoisRecord
 from config import Config
 
@@ -13,8 +15,8 @@ def store_new_record(domain: str, whois_server: str, response: str):
     return doc.rid
 
 
-def get_record_for_domain_if_existing(domain: str) -> (str, str):
+def get_record_for_domain_if_existing(domain: str) -> (str, str, datetime.datetime):
     record = WhoisRecord.objects(domain=domain).order_by("-timestamp").first()
     if record:
-        return record.unformatted_response, record.whois_server
+        return record.unformatted_response, record.whois_server, record.timestamp
     raise Exception("Not found")
