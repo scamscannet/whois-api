@@ -11,6 +11,7 @@ class WhoisResponse(BaseModel):
     json_format: dict
     raw: str
     timestamp: datetime.datetime
+    live: bool = False
 
 class IpWhoisResponse(BaseModel):
     parsed: IpWhois

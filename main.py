@@ -14,7 +14,6 @@ from whois.parser import parse_whois_request_to_model, parse_ip_whois_request_to
 from whois.whois import response_to_key_value_json, make_whois_request, make_ip_whois_request, \
     make_recursive_whois_request
 from tldextract import extract
-from diskcache import Cache
 
 app = FastAPI(
     title="Whois API"
@@ -27,28 +26,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-def add_to_cache(domain: str):
-    with Cache('cache') as cache:
-        cached_domains = cache.get("domain_whois")
-        if cached_domains:
-            new_domains = cached_domains.split(",")[-9:]
-            new_domains.append(domain)
-        else:
-            new_domains = [domain]
-        cache.set("domain_whois", ','.join(new_domains))
-
-
-def add_ip_to_cache(ip: str):
-    with Cache('cache') as cache:
-        cached_domains = cache.get("ip_whois")
-        if cached_domains:
-            new_domains = cached_domains.split(",")[-9:]
-            new_domains.append(ip)
-        else:
-            new_domains = [ip]
-        cache.set("ip_whois", ','.join(new_domains))
 
 
 def caching_whois_request(domain: str, renew: bool = False):
@@ -64,13 +41,28 @@ def caching_whois_request(domain: str, renew: bool = False):
     return text, whois_server, timestamp
 
 
+def caching_ip_whois_request(domain: str, renew: bool = False):
+    timestamp = datetime.datetime.now()
+    if not renew:
+        try:
+            text, whois_server, timestamp = get_record_for_domain_if_existing(domain)
+            return text, whois_server, timestamp
+        except Exception:
+            pass
+    text, whois_server = make_ip_whois_request(domain)
+    store_new_record(domain=domain, whois_server=whois_server, response=text)
+    return text, whois_server, timestamp
+
+
 @app.get("/", include_in_schema=False)
 def redirect_to_docs():
     RedirectResponse("/docs")
 
 
-@app.get("/whois/{domain}", response_model=WhoisResponse)
+@app.get("/whois/{domain}", response_model=WhoisResponse, tags=["Domain"])
 def request_whois_data_for_domain(domain: str, live: bool = False):
+    """Request whois data for a specific domain. The whois data is either queried live or loaded from our cache. The
+    timestamp in the response indicates the time of the query. Setting live to true disables the cache and results in querying the latest whois data. """
     extracted_domain = extract(domain)
     parsed_domain = extracted_domain.domain + "." + extracted_domain.suffix
 
@@ -79,27 +71,27 @@ def request_whois_data_for_domain(domain: str, live: bool = False):
     unformatted_dict = response_to_key_value_json(text)
     try:
         parsed = parse_whois_request_to_model(text, whois_server)
-        add_to_cache(parsed_domain)
     except Exception as e:
-        print(e)
         parsed = Whois()
     response = WhoisResponse(
         parsed=parsed,
         json_format=unformatted_dict,
         raw=text,
-        timestamp=timestamp
+        timestamp=timestamp,
+        live=live
+
     )
     return response
 
 
-@app.get("/ip-whois/{ip}")
-def request_whois_data_for_domain(ip: str, max_ipnet_size: int = 64):
-    text, whois_server = caching_whois_request(ip)
+@app.get("/ip-whois/{ip}", tags=["IP"])
+def request_whois_data_for_ip(ip: str, max_ipnet_size: int = 64):
+    text, whois_server, timestamp = caching_ip_whois_request(ip)
     unformatted_dict = response_to_key_value_json(text)
     try:
         parsed = parse_ip_whois_request_to_model(text, whois_server, max_ipnet_size)
-        add_ip_to_cache(ip)
     except Exception as e:
+        print(e)
         parsed = IpWhois()
     parsed.ip = ip
 
@@ -110,30 +102,3 @@ def request_whois_data_for_domain(ip: str, max_ipnet_size: int = 64):
     )
 
     return response
-
-
-@app.get("/history")
-def get_last_10_whois_requests():
-    with Cache('cache') as cache:
-        cached_domains = cache.get("domain_whois")
-        if cached_domains:
-            domains = cached_domains.split(',')
-        else:
-            domains = []
-
-        cached_ips = cache.get("ip_whois")
-        if cached_ips:
-            ips = cached_ips.split(',')
-        else:
-            ips = []
-
-    return {
-        'domain': domains,
-        'ip': ips
-    }
-
-
-@app.get('/current-ip')
-def get_current_ip(request: Request):
-    client_host = request.client.host
-    return {"ip": client_host}

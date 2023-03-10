@@ -3,7 +3,6 @@ from adapters.domain import adapters
 from adapters.ip import adapters as ip_adapters
 
 
-
 def parse_whois_request_to_model(text: str, whois_server):
     parsed = response_to_json(text)
     if whois_server not in adapters.keys():
@@ -12,6 +11,7 @@ def parse_whois_request_to_model(text: str, whois_server):
         adapter = adapters[whois_server]()
     adapter.parse(parsed, whois_server)
     return adapter
+
 
 def parse_ip_whois_request_to_model(text: str, whois_server, max_ipnet_size: int = 64):
     if whois_server not in ip_adapters.keys():

@@ -6,10 +6,12 @@ from utils.geolocation import get_location
 
 server = None
 
+
 class IpAdapter(IpWhois):
     _address: list
     _inetnum: str
     _origin: str
+    addresses: list = []
 
     def parse(self, text, whois_server, max_ipnet_size: int = 500):
         self.whois = whois_server
@@ -19,8 +21,8 @@ class IpAdapter(IpWhois):
                 if any(t in line for t in self._address):
                     try:
                         key, part_address = line.split(":")
-                        address += part_address
-                    except:
+                        address += " " + part_address.replace("  ", "")
+                    except Exception as e:
                         pass
                 if self._inetnum in line:
                     key, inet = line.split(":")
@@ -29,8 +31,6 @@ class IpAdapter(IpWhois):
                 if self._origin in line:
                     key, asn = line.split(":")
                     self.as_id = int(asn.strip().replace("AS", ""))
-
-
 
             if address:
                 loc_obj = get_location(" ".join(address.split()))
