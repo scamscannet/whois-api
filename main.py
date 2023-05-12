@@ -56,7 +56,7 @@ def caching_ip_whois_request(domain: str, renew: bool = False):
 
 @app.get("/", include_in_schema=False)
 def redirect_to_docs():
-    RedirectResponse("/docs")
+    return RedirectResponse("/docs")
 
 
 @app.get("/whois/{domain}", response_model=WhoisResponse, tags=["Domain"])
