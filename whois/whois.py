@@ -62,9 +62,7 @@ def make_whois_request(domain: str) -> (str, str):
 
 
 def make_ip_whois_request(ip: str) -> (str, str):
-    tld_to_whois = TldToWhoisServer()
-    tld_to_whois.load()
-    whois_server = tld_to_whois.whois_server_for_tld(ip.split('.')[1])
+    whois_server = 'whois.iana.org'
     used_servers = []
     last_used_whois_server = None
     current_whois_data = None
