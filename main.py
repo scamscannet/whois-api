@@ -1,15 +1,16 @@
 import datetime
-import json
-import traceback
+from typing import Annotated
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, OAuth2PasswordBearer
 from starlette.responses import RedirectResponse
 
 from database.registry.WhoisRecordRegistry import get_record_for_domain_if_existing, store_new_record
 from models.whois.domain.whois import Whois
 from models.api.whois_response import WhoisResponse, IpWhoisResponse
 from models.whois.ip.ip_whois import IpWhois
+from security import get_current_user, UserData
 from whois.parser import parse_whois_request_to_model, parse_ip_whois_request_to_model
 from whois.whois import response_to_key_value_json, make_whois_request, make_ip_whois_request, \
     make_recursive_whois_request
@@ -18,6 +19,8 @@ from tldextract import extract
 app = FastAPI(
     title="Whois API"
 )
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,7 +29,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 def caching_whois_request(domain: str, renew: bool = False):
     timestamp = datetime.datetime.now()
@@ -60,7 +62,7 @@ def redirect_to_docs():
 
 
 @app.get("/whois/{domain}", response_model=WhoisResponse, tags=["Domain"])
-def request_whois_data_for_domain(domain: str, live: bool = False):
+def request_whois_data_for_domain(domain: str, live: bool = False, user: UserData = Depends(get_current_user)):
     """Request whois data for a specific domain. The whois data is either queried live or loaded from our cache. The
     timestamp in the response indicates the time of the query. Setting live to true disables the cache and results in querying the latest whois data. """
     extracted_domain = extract(domain)
@@ -85,7 +87,7 @@ def request_whois_data_for_domain(domain: str, live: bool = False):
 
 
 @app.get("/ip-whois/{ip}", tags=["IP"])
-def request_whois_data_for_ip(ip: str, max_ipnet_size: int = 64):
+def request_whois_data_for_ip(ip: str, max_ipnet_size: int = 64, user: UserData = Depends(get_current_user)):
     text, whois_server, timestamp = caching_ip_whois_request(ip)
     unformatted_dict = response_to_key_value_json(text)
     try:
@@ -102,3 +104,12 @@ def request_whois_data_for_ip(ip: str, max_ipnet_size: int = 64):
     )
 
     return response
+
+
+@app.get("/me")
+def private(user: UserData = Depends(get_current_user)):
+    """A valid access token is required to access this route"""
+
+    return {
+        "authenticated": True
+    }
