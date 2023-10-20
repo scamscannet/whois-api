@@ -85,8 +85,8 @@ def request_whois_data_for_domain(domain: str, live: bool = False):
 
 
 @app.get("/ip-whois/{ip}", tags=["IP"])
-def request_whois_data_for_ip(ip: str, max_ipnet_size: int = 64):
-    text, whois_server, timestamp = caching_ip_whois_request(ip)
+def request_whois_data_for_ip(ip: str, max_ipnet_size: int = 64, live: bool = False):
+    text, whois_server, timestamp = caching_ip_whois_request(ip, renew=live)
     unformatted_dict = response_to_key_value_json(text)
     try:
         parsed = parse_ip_whois_request_to_model(text, whois_server, max_ipnet_size)

@@ -7,15 +7,24 @@ tld_to_whois = TldToWhoisServer()
 def find_parent_whois_server_in_response(response: str):
     splitted_response = response.lower().split('\n')
     for line in splitted_response:
+        # ARIN referrals
+        if line.startswith('%') or line.startswith(">>>") or line.startswith("#"):
+            continue
 
-        if 'whois' in line.lower() and not (line.startswith('%') or line.startswith(">>>")):
+        if 'whois' in line.lower():
             try:
-                key, data = line.replace('http://', '').replace('whois://', '').replace('https://', '').replace(' ', '').split(':')
-                if 'refer' or 'whois server' in key:
-                    return data
-            except:
+                key, data = line.replace('http://', '')\
+                    .replace('whois://', '')\
+                    .replace('rwhois://', '') \
+                    .replace('https://', '') \
+                    .replace(' ', '')\
+                    .split(':')
+
+            except Exception:
                 continue
-    return ""
+
+            if 'refer' in key or 'whois server' in key:
+                yield data
 
 
 def make_recursive_whois_request(domain: str) -> (str, str):
@@ -32,12 +41,13 @@ def make_recursive_whois_request(domain: str) -> (str, str):
         used_servers.append(whois_server)
         if whois_data:
             current_whois_data = whois_data
+            whois_server = None
             try:
-                new_server = find_parent_whois_server_in_response(whois_data).replace("\r", "")
-                if new_server and whois_server != new_server and not new_server in used_servers and "whois" in new_server:
-                    whois_server = new_server
-                else:
-                    whois_server = None
+                new_servers = find_parent_whois_server_in_response(whois_data)
+                for new_server in new_servers:
+                    if new_server and whois_server != new_server and not new_server in used_servers:
+                        whois_server = new_server.replace("\r", "")
+                        break
             except:
                 whois_server = None
 
@@ -67,6 +77,7 @@ def make_ip_whois_request(ip: str) -> (str, str):
     last_used_whois_server = None
     current_whois_data = None
     while whois_server:
+
         if "/" in whois_server:
             break
         try:
@@ -80,13 +91,15 @@ def make_ip_whois_request(ip: str) -> (str, str):
         used_servers.append(whois_server)
         if whois_data:
             current_whois_data = whois_data
+            whois_server = None
+
             try:
-                new_server = find_parent_whois_server_in_response(whois_data).replace("\r", "")
-                if new_server and whois_server != new_server and not new_server in used_servers:
-                    whois_server = new_server
-                else:
-                    whois_server = None
-            except:
+                new_servers = find_parent_whois_server_in_response(whois_data)
+                for new_server in new_servers:
+                    if new_server and whois_server != new_server and not new_server in used_servers:
+                        whois_server = new_server.replace("\r", "")
+                        break
+            except Exception as e:
                 whois_server = None
 
     if current_whois_data:
