@@ -7,7 +7,7 @@ tld_to_whois = TldToWhoisServer()
 def find_parent_whois_server_in_response(response: str):
     splitted_response = response.lower().split('\n')
     for line in splitted_response:
-        # ARIN referrals
+
         if line.startswith('%') or line.startswith(">>>") or line.startswith("#"):
             continue
 
@@ -23,7 +23,7 @@ def find_parent_whois_server_in_response(response: str):
             except Exception:
                 continue
 
-            if 'refer' in key or 'whois server' in key:
+            if 'refer' in key or 'whoisserver' in key.lower():
                 yield data
 
 
@@ -45,6 +45,7 @@ def make_recursive_whois_request(domain: str) -> (str, str):
             try:
                 new_servers = find_parent_whois_server_in_response(whois_data)
                 for new_server in new_servers:
+
                     if new_server and whois_server != new_server and not new_server in used_servers:
                         whois_server = new_server.replace("\r", "")
                         break
@@ -87,6 +88,7 @@ def make_ip_whois_request(ip: str) -> (str, str):
             whois_data = raw_whois_request(whois_server, fip)
         except:
             break
+
         last_used_whois_server = whois_server
         used_servers.append(whois_server)
         if whois_data:

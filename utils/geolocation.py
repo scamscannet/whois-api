@@ -6,19 +6,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class Location(BaseModel):
-    unformatted: str
-    country: str = ""
-    address: str
-    longitude: str
-    latitude: str
+    unformatted: str = None
+    country: str = None
+    address: str = None
+    longitude: str = None
+    latitude: str = None
 
 
 geolocator = HereV7(os.getenv("HERE_API_KEY"))
 
 
-def get_location(address: str) -> Location:
+def get_location(address: str) -> Location | None:
     location = geolocator.geocode(address)
+    if not location:
+        return None
     loc_obj = Location(
         unformatted=address,
         address=location.address,
@@ -26,6 +29,7 @@ def get_location(address: str) -> Location:
         latitude=location.latitude,
 
     )
+
     try:
         loc_obj.country = location.raw["address"]["countryCode"]
     except:

@@ -12,8 +12,14 @@ class WhoisContact(BaseModel):
     street: str = None
     city: str = None
     state: str = None
-    postal_code: int = None
+    postal_code: str = None
     country: str = None
     fax: str = None
-    location: Location = {}
+    location: Location = None
 
+
+class WhoisContactWrapper(BaseModel):
+    registrant: WhoisContact = WhoisContact()
+    admin: WhoisContact = WhoisContact()
+    billing: WhoisContact = WhoisContact()
+    tech: WhoisContact = WhoisContact()

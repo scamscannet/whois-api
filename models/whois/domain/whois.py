@@ -2,7 +2,7 @@ import dateutil.parser
 from pydantic import BaseModel
 
 from utils.geolocation import get_location
-from models.whois.domain.whois_contact import WhoisContact
+from models.whois.domain.whois_contact import WhoisContact, WhoisContactWrapper
 from models.whois.domain.whois_date import WhoisDate
 from models.whois.domain.whois_registrar import WhoisRegistrar
 
@@ -14,7 +14,7 @@ class Whois(BaseModel):
     whois: str = None
     date: WhoisDate = WhoisDate()
     name_servers: list = []
-    contact: list = []
+    contact: WhoisContactWrapper = WhoisContactWrapper()
 
     # Adapter params
     _date_keys: dict
@@ -60,9 +60,9 @@ class Whois(BaseModel):
 
             # Parse Contact
             elif key.lower() in self._contact_keys:
-                existing_contacts = {contact.type: contact for contact in self.contact}
                 attribute, raw_local_contact_type = self._contact_keys[key.lower()]
-                local_contact_type = raw_local_contact_type.capitalize() if raw_local_contact_type else raw_local_contact_type
+                local_contact_type = raw_local_contact_type.lower()
+
                 # Cache the current contact type in case the whois record
                 # defines it only once above the according values
                 if not local_contact_type:
@@ -70,20 +70,15 @@ class Whois(BaseModel):
                 else:
                     contact_type = local_contact_type
 
-                # Check if a contact obj exists to the according type
-                if local_contact_type in existing_contacts.keys():
-                    contact_obj = existing_contacts[local_contact_type]
-                    setattr(contact_obj, attribute, data)
-                else:
-                    contact_obj = WhoisContact()
-                    contact_obj.type = local_contact_type
-                    setattr(contact_obj, attribute, data)
-                    self.contact.append(contact_obj)
+                attr = getattr(self.contact, local_contact_type)
+                setattr(attr, attribute, data)
 
-        for contact in self.contact:
+        contact_types = ["tech", "registrant", "billing", "admin"]
+        for contact_type in contact_types:
+            contact = getattr(self.contact, contact_type)
             try:
                 loc = get_location(f"{contact.organization} {contact.street}, {contact.postal_code} {contact.city}, { contact.country }")
                 if loc:
                     contact.location = loc
-            except:
+            except Exception:
                 pass
