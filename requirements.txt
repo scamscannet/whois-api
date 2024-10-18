@@ -1,4 +1,6 @@
 pymongo>=4.10.1
 litestar>=2.12.0
-python-dotenv>=-1.0.1
+python-dotenv>=1.0.1
 git+https://github.com/scamscannet/who_is.git
+requests>=2.32.0
+pydantic>=2.9.2
